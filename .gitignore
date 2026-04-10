@@ -1,0 +1,22 @@
+# .gitignore
+
+# Build artifacts
+build/
+dist/
+
+# Node.js dependencies
+node_modules/
+
+# IDE
+.idea/
+# Logs
+logs/
+# OS generated files
+.DS_Store
+# Environment variables.env
+.env    
+
+# Skills
+.agents/
+.claude/
+skills-lock.json
