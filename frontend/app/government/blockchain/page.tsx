@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Shield, Hash, ArrowLeft, Activity } from 'lucide-react';
+import { Shield, Hash, ArrowLeft, Activity, Hexagon, Boxes, CheckCircle, AlertTriangle } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { blockchainAPI } from '@/lib/api';
 import { Block, BlockchainStats } from '@/lib/types';
 
@@ -42,16 +43,19 @@ export default function BlockchainVisualizer() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[var(--ledger-black)]">
       {/* Header */}
-      <header className="bg-primary text-white p-4">
+      <header className="bg-[var(--ledger-charcoal)] border-b border-[var(--ledger-border)] p-4">
         <div className="max-w-6xl mx-auto flex items-center gap-3">
-          <button onClick={() => router.back()} className="hover:bg-slate-800 p-2 rounded-lg transition-colors">
+          <button 
+            onClick={() => router.back()} 
+            className="p-2 -ml-2 text-[var(--ledger-muted)] hover:text-[var(--ledger-text)] hover:bg-[var(--ledger-graphite)] rounded-lg transition-colors"
+          >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
-            <Shield className="w-6 h-6" />
-            <span className="font-bold">Blockchain Visualizer</span>
+            <Hexagon className="w-6 h-6 text-[var(--ledger-gold)]" />
+            <span className="font-bold text-[var(--ledger-text)]">Blockchain Ledger</span>
           </div>
         </div>
       </header>
@@ -59,52 +63,65 @@ export default function BlockchainVisualizer() {
       <main className="max-w-6xl mx-auto p-6">
         {/* Stats */}
         {stats && (
-          <div className="grid md:grid-cols-3 gap-4 mb-8">
-            <div className="card flex items-center gap-4">
-              <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
-                <Hash className="w-6 h-6 text-emerald-600" />
+          <motion.div 
+            className="grid md:grid-cols-3 gap-4 mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <div className="ledger-card flex items-center gap-4">
+              <div className="w-12 h-12 bg-[var(--ledger-gold)]/20 rounded-xl flex items-center justify-center">
+                <Boxes className="w-6 h-6 text-[var(--ledger-gold)]" />
               </div>
               <div>
-                <p className="text-slate-500 text-sm">Total Blocks</p>
-                <p className="text-2xl font-bold text-slate-800">{stats.total_blocks}</p>
+                <p className="text-[var(--ledger-muted)] text-sm">Total Blocks</p>
+                <p className="text-2xl font-bold text-[var(--ledger-text)]">{stats.total_blocks}</p>
               </div>
             </div>
-            <div className="card flex items-center gap-4">
-              <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-                <Activity className="w-6 h-6 text-amber-600" />
+            <div className="ledger-card flex items-center gap-4">
+              <div className="w-12 h-12 bg-[var(--ledger-amber)]/20 rounded-xl flex items-center justify-center">
+                <Activity className="w-6 h-6 text-[var(--ledger-amber)]" />
               </div>
               <div>
-                <p className="text-slate-500 text-sm">Transactions</p>
-                <p className="text-2xl font-bold text-slate-800">{stats.total_transactions}</p>
+                <p className="text-[var(--ledger-muted)] text-sm">Transactions</p>
+                <p className="text-2xl font-bold text-[var(--ledger-text)]">{stats.total_transactions}</p>
               </div>
             </div>
-            <div className="card flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stats.chain_valid ? 'bg-emerald-100' : 'bg-rose-100'}`}>
-                <Activity className={`w-6 h-6 ${stats.chain_valid ? 'text-emerald-600' : 'text-rose-600'}`} />
+            <div className="ledger-card flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stats.chain_valid ? 'bg-[var(--ledger-emerald)]/20' : 'bg-[var(--ledger-rose)]/20'}`}>
+                {stats.chain_valid ? (
+                  <CheckCircle className="w-6 h-6 text-[var(--ledger-emerald)]" />
+                ) : (
+                  <AlertTriangle className="w-6 h-6 text-[var(--ledger-rose)]" />
+                )}
               </div>
               <div>
-                <p className="text-slate-500 text-sm">Chain Status</p>
-                <p className={`text-2xl font-bold ${stats.chain_valid ? 'text-emerald-600' : 'text-rose-600'}`}>
+                <p className="text-[var(--ledger-muted)] text-sm">Chain Status</p>
+                <p className={`text-2xl font-bold ${stats.chain_valid ? 'text-[var(--ledger-emerald)]' : 'text-[var(--ledger-rose)]'}`}>
                   {stats.chain_valid ? 'Valid' : 'Invalid'}
                 </p>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Blockchain Visualization */}
-        <div className="card">
-          <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-            <Hash className="w-5 h-5 text-emerald-500" />
+        <motion.div 
+          className="ledger-card"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <h2 className="text-xl font-bold text-[var(--ledger-text)] mb-6 flex items-center gap-2">
+            <Hash className="w-5 h-5 text-[var(--ledger-gold)]" />
             Blockchain Ledger
           </h2>
 
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+            <div className="flex items-center justify-center py-16">
+              <div className="w-8 h-8 border-2 border-[var(--ledger-gold)] border-t-transparent rounded-full animate-spin" />
             </div>
           ) : blocks.length === 0 ? (
-            <div className="text-center py-12 text-slate-500">
+            <div className="text-center py-16 text-[var(--ledger-muted)]">
               No blocks in the blockchain yet
             </div>
           ) : (
@@ -114,54 +131,60 @@ export default function BlockchainVisualizer() {
                 const isGenesis = txData?.type === 'GENESIS';
 
                 return (
-                  <div key={block.block_index} className="relative">
+                  <motion.div 
+                    key={block.block_index}
+                    className="relative"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                  >
                     {/* Connector line */}
                     {idx < blocks.length - 1 && (
-                      <div className="absolute left-6 top-14 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-slate-300"></div>
+                      <div className="absolute left-6 top-14 bottom-0 w-0.5 bg-gradient-to-b from-[var(--ledger-gold)] to-[var(--ledger-border)]"></div>
                     )}
 
                     <div className="flex gap-4">
                       {/* Block number circle */}
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${isGenesis ? 'bg-slate-600' : 'bg-gradient-to-br from-emerald-400 to-emerald-600'} shadow-lg`}>
-                        <span className="text-white font-bold">{block.block_index}</span>
+                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 ${isGenesis ? 'bg-[var(--ledger-graphite)]' : 'bg-[var(--ledger-gold)]'} shadow-lg`}>
+                        <span className="text-[var(--ledger-black)] font-bold mono">{block.block_index}</span>
                       </div>
 
                       {/* Block content */}
-                      <div className="flex-1 bg-slate-50 rounded-xl border border-slate-200 p-5">
+                      <div className="flex-1 bg-[var(--ledger-graphite)] rounded-xl border border-[var(--ledger-border)] p-5">
                         <div className="flex items-center justify-between mb-4">
-                          <span className={`font-semibold ${isGenesis ? 'text-slate-600' : 'text-emerald-600'}`}>
+                          <span className={`font-semibold ${isGenesis ? 'text-[var(--ledger-muted)]' : 'text-[var(--ledger-gold)]'}`}>
                             {isGenesis ? 'Genesis Block' : `Block #${block.block_index}`}
                           </span>
-                          <span className="text-slate-400 text-sm">
+                          <span className="text-[var(--ledger-muted)] text-sm mono">
                             {new Date(block.timestamp).toLocaleString()}
                           </span>
                         </div>
 
                         {/* Transaction data */}
                         {!isGenesis && txData && (
-                          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                            {txData.from_owner_name && (
-                              <div className="bg-slate-100 rounded-lg p-3">
-                                <p className="text-slate-500 text-xs">From</p>
-                                <p className="font-medium text-slate-800 truncate">{txData.from_owner_name}</p>
+                          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                            {!!txData.from_owner_name && (
+                              <div className="bg-[var(--ledger-charcoal)] rounded-lg p-3">
+                                <p className="text-[var(--ledger-muted)] text-xs">From</p>
+                                <p className="font-medium text-[var(--ledger-text)] truncate">{String(txData.from_owner_name)}</p>
                               </div>
                             )}
-                            {txData.to_name && (
-                              <div className="bg-slate-100 rounded-lg p-3">
-                                <p className="text-slate-500 text-xs">To</p>
-                                <p className="font-medium text-slate-800 truncate">{txData.to_name}</p>
+                            {!!txData.to_name && (
+                              <div className="bg-[var(--ledger-charcoal)] rounded-lg p-3">
+                                <p className="text-[var(--ledger-muted)] text-xs">To</p>
+                                <p className="font-medium text-[var(--ledger-gold)] truncate">{String(txData.to_name)}</p>
                               </div>
                             )}
-                            {txData.price && (
-                              <div className="bg-slate-100 rounded-lg p-3">
-                                <p className="text-slate-500 text-xs">Price</p>
-                                <p className="font-medium text-slate-800">₹{Number(txData.price).toLocaleString()}</p>
+                            {!!txData.price && (
+                              <div className="bg-[var(--ledger-charcoal)] rounded-lg p-3">
+                                <p className="text-[var(--ledger-muted)] text-xs">Value</p>
+                                <p className="font-medium text-[var(--ledger-text)]">₹{Number(txData.price).toLocaleString()}</p>
                               </div>
                             )}
-                            {txData.approver_name && (
-                              <div className="bg-slate-100 rounded-lg p-3">
-                                <p className="text-slate-500 text-xs">Approved By</p>
-                                <p className="font-medium text-slate-800 truncate">{txData.approver_name}</p>
+                            {!!txData.approver_name && (
+                              <div className="bg-[var(--ledger-charcoal)] rounded-lg p-3">
+                                <p className="text-[var(--ledger-muted)] text-xs">Approved By</p>
+                                <p className="font-medium text-[var(--ledger-text)] truncate">{String(txData.approver_name)}</p>
                               </div>
                             )}
                           </div>
@@ -169,23 +192,23 @@ export default function BlockchainVisualizer() {
 
                         {/* Hash display */}
                         <div className="space-y-2">
-                          <div className="bg-slate-800 rounded-lg p-3">
-                            <p className="text-slate-400 text-xs mb-1">Block Hash (SHA-256)</p>
-                            <p className="text-emerald-400 font-mono text-sm break-all">{block.hash}</p>
+                          <div className="bg-[var(--ledger-black)] rounded-lg p-3">
+                            <p className="text-[var(--ledger-muted)] text-xs mb-1">SHA-256 Hash</p>
+                            <p className="text-[var(--ledger-gold)] font-mono text-xs break-all">{block.hash}</p>
                           </div>
-                          <div className="bg-slate-100 rounded-lg p-3">
-                            <p className="text-slate-500 text-xs mb-1">Previous Hash</p>
-                            <p className="text-slate-600 font-mono text-sm break-all">{block.previous_hash}</p>
+                          <div className="bg-[var(--ledger-charcoal)] rounded-lg p-3">
+                            <p className="text-[var(--ledger-muted)] text-xs mb-1">Previous Hash</p>
+                            <p className="text-[var(--ledger-muted)] font-mono text-xs break-all">{block.previous_hash}</p>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
           )}
-        </div>
+        </motion.div>
       </main>
     </div>
   );

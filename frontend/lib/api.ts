@@ -37,10 +37,16 @@ apiClient.interceptors.response.use(
 
 // Auth API
 export const authAPI = {
-  login: (email: string, password: string) =>
-    apiClient.post('/api/auth/login', null, {
-      params: { username: email, password },
-    }),
+  login: (email: string, password: string) => {
+    const params = new URLSearchParams();
+    params.append('username', email);
+    params.append('password', password);
+    return apiClient.post('/api/auth/login', params, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+  },
   register: (data: {
     email: string;
     password: string;

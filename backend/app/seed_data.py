@@ -33,7 +33,7 @@ def seed_data():
         # Create Government Official
         gov_user = User(
             id="gov_001",
-            email="official@land registry.gov",
+            email="office@land.register.gov",
             password_hash=hash_password("admin123"),
             role=UserRole.GOVERNMENT,
             full_name="Rajesh Kumar",
@@ -121,7 +121,7 @@ def seed_data():
         print("Database seeded successfully!")
         print("\n=== Demo Credentials ===")
         print("Government Official:")
-        print("  Email: official@land registry.gov")
+        print("  Email: office@land.register.gov")
         print("  Password: admin123")
         print("\nCitizen 1:")
         print("  Email: arun@example.com")

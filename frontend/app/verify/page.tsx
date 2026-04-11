@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Shield, Search, CheckCircle, ArrowLeft, Hash, Clock, User }
- from 'lucide-react';
+import { Shield, Search, CheckCircle, ArrowLeft, Hash, Clock, User, Hexagon, Building2, Fingerprint } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { blockchainAPI } from '@/lib/api';
 import { PropertyVerification, Block } from '@/lib/types';
 
@@ -26,43 +26,64 @@ export default function VerifyPage() {
       const res = await blockchainAPI.verify(propertyId.trim());
       setVerification(res.data);
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Property not found');
+      const errorData = err.response?.data;
+      let errorMessage = 'Property not found';
+      
+      if (Array.isArray(errorData)) {
+        errorMessage = errorData.map((e: any) => e.msg || e.detail || 'Verification error').join(', ');
+      } else if (errorData?.detail) {
+        errorMessage = typeof errorData.detail === 'string' ? errorData.detail : 'Property not found';
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-[var(--ledger-black)] grid-bg relative">
+      {/* Ambient background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[var(--ledger-gold)]/5 rounded-full blur-[150px] -translate-y-1/2 translate-x-1/3" />
+      </div>
+
       {/* Header */}
-      <header className="border-b border-slate-700/50 backdrop-blur-md bg-slate-900/50 sticky top-0 z-50">
+      <header className="relative border-b border-[var(--ledger-border)] bg-[var(--ledger-black)]/80 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={() => router.back()} className="text-slate-300 hover:text-white transition-colors">
+            <button 
+              onClick={() => router.back()} 
+              className="p-2 -ml-2 text-[var(--ledger-muted)] hover:text-[var(--ledger-text)] transition-colors"
+            >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex items-center justify-center">
-              <Shield className="w-6 h-6 text-white" />
+            <div className="flex items-center gap-2">
+              <Hexagon className="w-6 h-6 text-[var(--ledger-gold)]" />
+              <span className="text-xl font-bold text-[var(--ledger-text)]">SHADOW-LEDGER</span>
             </div>
-            <span className="text-2xl font-bold text-white">Shadow-Ledger</span>
           </div>
-          <nav className="flex items-center gap-6">
-            <button 
-              onClick={() => router.push('/login')}
-              className="text-slate-300 hover:text-white transition-colors"
-            >
-              Sign In
-            </button>
-          </nav>
+          <button 
+            onClick={() => router.push('/login')}
+            className="btn-secondary text-sm py-2"
+          >
+            Sign In
+          </button>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-12">
+      <main className="relative max-w-4xl mx-auto px-6 py-12">
         {/* Search Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">Verify Land Records</h1>
-          <p className="text-slate-400 text-lg mb-8">
-            Enter a property ID to verify ownership and view blockchain proof
+        <motion.div 
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <h1 className="text-3xl md:text-4xl font-bold text-[var(--ledger-text)] mb-4 tracking-tight">
+            Verify <span className="text-[var(--ledger-gold)]">Land Records</span>
+          </h1>
+          <p className="text-[var(--ledger-muted)] text-lg mb-8 max-w-xl mx-auto">
+            Enter a Property ID to verify ownership and view cryptographic proof on the blockchain
           </p>
 
           <form onSubmit={handleVerify} className="max-w-xl mx-auto">
@@ -71,157 +92,199 @@ export default function VerifyPage() {
                 type="text"
                 value={propertyId}
                 onChange={(e) => setPropertyId(e.target.value)}
-                className="flex-1 px-5 py-4 bg-slate-800 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all text-lg"
-                placeholder="Enter Property ID (e.g., PROP-001)"
+                className="input-field flex-1 text-lg"
+                placeholder="PROP-001"
               />
               <button
                 type="submit"
                 disabled={loading}
-                className="px-8 py-4 bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-600/50 text-white rounded-xl font-semibold transition-all flex items-center gap-2"
+                className="btn-primary px-8 flex items-center gap-2"
               >
                 {loading ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-[var(--ledger-black)] border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <Search className="w-5 h-5" />
+                  <>
+                    <Search className="w-5 h-5" />
+                    Verify
+                  </>
                 )}
-                Verify
               </button>
             </div>
           </form>
 
-          {error && (
-            <div className="max-w-xl mx-auto mt-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 px-4 py-3 rounded-lg">
-              {error}
-            </div>
-          )}
-        </div>
+          <AnimatePresence>
+            {error && (
+              <motion.div 
+                className="max-w-xl mx-auto mt-4 bg-[var(--ledger-rose)]/10 border border-[var(--ledger-rose)]/30 text-[var(--ledger-rose)] px-4 py-3 rounded-lg text-sm"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                {error}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
         {/* Verification Result */}
-        {verification && (
-          <div className="space-y-6">
-            {/* Verification Badge */}
-            <div className={`bg-slate-800/50 border rounded-2xl p-6 ${verification.is_verified ? 'border-emerald-500/50' : 'border-amber-500/50'}`}>
-              <div className="flex items-center gap-4 mb-4">
-                {verification.is_verified ? (
-                  <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center">
-                    <CheckCircle className="w-8 h-8 text-emerald-400" />
-                  </div>
-                ) : (
-                  <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center">
-                    <Search className="w-8 h-8 text-amber-400" />
-                  </div>
-                )}
-                <div>
-                  <h2 className="text-2xl font-bold text-white">
-                    {verification.is_verified ? 'Verified Property' : 'Property Found - Unverified'}
-                  </h2>
-                  <p className="text-slate-400">Property ID: {verification.property_id}</p>
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6 pt-4 border-t border-slate-700">
-                <div className="flex items-center gap-3">
-                  <User className="w-5 h-5 text-slate-400" />
+        <AnimatePresence>
+          {verification && (
+            <motion.div 
+              className="space-y-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              {/* Verification Badge */}
+              <motion.div 
+                className={`ledger-card ${verification.is_verified ? 'gold-glow' : ''}`}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.1 }}
+              >
+                <div className="flex items-center gap-5 mb-6">
+                  {verification.is_verified ? (
+                    <div className="w-16 h-16 bg-[var(--ledger-gold)]/20 rounded-full flex items-center justify-center">
+                      <CheckCircle className="w-8 h-8 text-[var(--ledger-gold)]" />
+                    </div>
+                  ) : (
+                    <div className="w-16 h-16 bg-[var(--ledger-amber)]/20 rounded-full flex items-center justify-center">
+                      <Search className="w-8 h-8 text-[var(--ledger-amber)]" />
+                    </div>
+                  )}
                   <div>
-                    <p className="text-slate-400 text-sm">Current Owner</p>
-                    <p className="text-white font-semibold">{verification.current_owner}</p>
+                    <h2 className="text-2xl font-bold text-[var(--ledger-text)]">
+                      {verification.is_verified ? 'Verified Property' : 'Property Found'}
+                    </h2>
+                    <p className="text-[var(--ledger-muted)] mono">{verification.property_id}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Hash className="w-5 h-5 text-slate-400" />
-                  <div>
-                    <p className="text-slate-400 text-sm">Owner Aadhaar</p>
-                    <p className="text-white font-semibold">{verification.current_owner_aadhaar}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            {/* Blockchain History */}
-            {verification.blockchain_history.length > 0 && (
-              <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
-                <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                  <Hash className="w-5 h-5 text-emerald-400" />
-                  Blockchain Transaction History
-                </h3>
-                
-                <div className="space-y-4">
-                  {verification.blockchain_history.map((block, idx) => {
-                    const txData = block.transaction_data;
-                    const isGenesis = txData?.type === 'GENESIS';
-                    
-                    return (
-                      <div key={block.block_index} className="relative">
-                        {/* Timeline connector */}
-                        {idx < verification.blockchain_history.length - 1 && (
-                          <div className="absolute left-6 top-12 bottom-0 w-0.5 bg-slate-700"></div>
-                        )}
-                        
-                        <div className="flex gap-4">
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${isGenesis ? 'bg-slate-600' : 'bg-gradient-to-br from-emerald-400 to-emerald-600'}`}>
-                            <span className="text-white font-bold text-sm">{block.block_index}</span>
-                          </div>
+                <div className="grid md:grid-cols-2 gap-6 pt-6 border-t border-[var(--ledger-border)]">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-[var(--ledger-graphite)] rounded-lg flex items-center justify-center">
+                      <User className="w-5 h-5 text-[var(--ledger-gold)]" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-[var(--ledger-muted)] uppercase tracking-wider">Current Owner</p>
+                      <p className="text-[var(--ledger-text)] font-semibold">{verification.current_owner}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-[var(--ledger-graphite)] rounded-lg flex items-center justify-center">
+                      <Fingerprint className="w-5 h-5 text-[var(--ledger-gold)]" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-[var(--ledger-muted)] uppercase tracking-wider">Owner ID</p>
+                      <p className="text-[var(--ledger-text)] font-semibold mono">{verification.current_owner_aadhaar}</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Blockchain History */}
+              {verification.blockchain_history.length > 0 && (
+                <motion.div 
+                  className="ledger-card"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <h3 className="text-lg font-bold text-[var(--ledger-text)] mb-6 flex items-center gap-2">
+                    <Hash className="w-5 h-5 text-[var(--ledger-gold)]" />
+                    Blockchain Transaction History
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    {verification.blockchain_history.map((block, idx) => {
+                      const txData = block.transaction_data;
+                      const isGenesis = txData?.type === 'GENESIS';
+                      
+                      return (
+                        <motion.div 
+                          key={block.block_index}
+                          className="relative"
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.3 + idx * 0.1 }}
+                        >
+                          {/* Timeline connector */}
+                          {idx < verification.blockchain_history.length - 1 && (
+                            <div className="absolute left-6 top-14 bottom-0 w-0.5 bg-[var(--ledger-border)]"></div>
+                          )}
                           
-                          <div className="flex-1 bg-slate-700/30 rounded-xl p-4">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-white font-semibold">
-                                {isGenesis ? 'Genesis Block' : `Transfer #${block.block_index}`}
-                              </span>
-                              <div className="flex items-center gap-1 text-slate-400 text-sm">
-                                <Clock className="w-4 h-4" />
-                                {new Date(block.timestamp).toLocaleString()}
-                              </div>
+                          <div className="flex gap-4">
+                            <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 ${isGenesis ? 'bg-[var(--ledger-graphite)]' : 'bg-[var(--ledger-gold)]'}`}>
+                              {isGenesis ? (
+                                <Hash className="w-5 h-5 text-[var(--ledger-muted)]" />
+                              ) : (
+                                <span className="text-[var(--ledger-black)] font-bold text-sm mono">{block.block_index}</span>
+                              )}
                             </div>
                             
-                            {!isGenesis && txData && (
-                              <div className="space-y-2 text-sm">
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div>
-                                    <p className="text-slate-400">From</p>
-                                    <p className="text-white">{txData.from_owner_name || 'Unknown'}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-slate-400">To</p>
-                                    <p className="text-white">{txData.to_name || 'Unknown'}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-slate-400">Price</p>
-                                    <p className="text-white">₹{Number(txData.price || 0).toLocaleString()}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-slate-400">Approver</p>
-                                    <p className="text-white">{txData.approver_name || 'Unknown'}</p>
-                                  </div>
+                            <div className="flex-1 bg-[var(--ledger-graphite)] rounded-lg p-4">
+                              <div className="flex items-center justify-between mb-3">
+                                <span className="text-[var(--ledger-text)] font-semibold">
+                                  {isGenesis ? 'Genesis Block' : `Transfer #${block.block_index}`}
+                                </span>
+                                <div className="flex items-center gap-1 text-[var(--ledger-muted)] text-xs">
+                                  <Clock className="w-3 h-3" />
+                                  {new Date(block.timestamp).toLocaleString()}
                                 </div>
                               </div>
-                            )}
-                            
-                            <div className="mt-3 pt-3 border-t border-slate-600">
-                              <p className="text-slate-400 text-xs mb-1">Hash</p>
-                              <p className="text-emerald-400 font-mono text-xs break-all">{block.hash}</p>
-                            </div>
-                            
-                            <div className="mt-2">
-                              <p className="text-slate-400 text-xs mb-1">Previous Hash</p>
-                              <p className="text-slate-500 font-mono text-xs break-all">{block.previous_hash}</p>
+                              
+                              {!isGenesis && txData && (
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-3">
+                                  <div>
+                                    <p className="text-[var(--ledger-muted)] text-xs">From</p>
+                                    <p className="text-[var(--ledger-text)]">{txData.from_owner_name ? String(txData.from_owner_name) : '—'}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-[var(--ledger-muted)] text-xs">To</p>
+                                    <p className="text-[var(--ledger-gold)]">{txData.to_name ? String(txData.to_name) : '—'}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-[var(--ledger-muted)] text-xs">Value</p>
+                                    <p className="text-[var(--ledger-text)]">₹{Number(txData.price || 0).toLocaleString()}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-[var(--ledger-muted)] text-xs">Approved By</p>
+                                    <p className="text-[var(--ledger-text)]">{txData.approver_name ? String(txData.approver_name) : '—'}</p>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              <div className="pt-3 border-t border-[var(--ledger-border)]">
+                                <p className="text-[var(--ledger-muted)] text-xs mb-1">SHA-256 Hash</p>
+                                <p className="text-[var(--ledger-gold)] font-mono text-xs break-all">{block.hash}</p>
+                              </div>
+                              
+                              <div className="mt-2">
+                                <p className="text-[var(--ledger-muted)] text-xs mb-1">Previous Hash</p>
+                                <p className="text-[var(--ledger-muted)] font-mono text-xs break-all">{block.previous_hash}</p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
 
-            {verification.blockchain_history.length === 0 && (
-              <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8 text-center">
-                <Hash className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-                <p className="text-slate-400">No blockchain transactions found for this property</p>
-              </div>
-            )}
-          </div>
-        )}
+              {verification.blockchain_history.length === 0 && (
+                <motion.div 
+                  className="ledger-card text-center py-12"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <Hash className="w-10 h-10 text-[var(--ledger-muted)] mx-auto mb-4" />
+                  <p className="text-[var(--ledger-muted)]">No blockchain transactions for this property</p>
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
     </div>
   );

@@ -9,7 +9,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$ProjectRoot = Split-Path -Parent $PSScriptRoot
+$ProjectRoot = $PSScriptRoot
 
 # Colors for output
 function Write-Success { param($msg) Write-Host "[SUCCESS] $msg" -ForegroundColor Green }
@@ -70,15 +70,20 @@ function Install-Backend {
     # Activate virtual environment
     $venvActivate = Join-Path $venvDir "Scripts\Activate.ps1"
     if (Test-Path $venvActivate) {
-        & $venvActivate
+        . $venvActivate
     } else {
         Write-Warn "Could not activate venv, using system Python"
     }
 
     # Install dependencies
     Write-Info "Installing backend dependencies..."
-    pip install --upgrade pip 2>&1 | Out-Null
-    pip install -r "$backendDir\requirements.txt" 2>&1 | Out-Null
+    if (Test-Path $venvActivate) {
+        & "$venvDir\Scripts\python.exe" -m pip install --upgrade pip 2>&1 | Out-Null
+        & "$venvDir\Scripts\python.exe" -m pip install -r "$backendDir\requirements.txt" 2>&1 | Out-Null
+    } else {
+        pip install --upgrade pip 2>&1 | Out-Null
+        pip install -r "$backendDir\requirements.txt" 2>&1 | Out-Null
+    }
 
     if ($LASTEXITCODE -eq 0) {
         Write-Success "Backend dependencies installed"
@@ -122,8 +127,7 @@ function Start-BackendServer {
 
     # Start uvicorn in background
     if (Test-Path $venvActivate) {
-        & $venvActivate
-        Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$backendDir'; uvicorn app.main:app --reload --host 0.0.0.0 --port 8000" -WindowStyle Normal
+        Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$backendDir'; . '$venvActivate'; uvicorn app.main:app --reload --host 0.0.0.0 --port 8000" -WindowStyle Normal
     } else {
         Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$backendDir'; python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000" -WindowStyle Normal
     }
