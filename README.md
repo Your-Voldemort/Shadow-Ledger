@@ -72,4 +72,4 @@ npm run dev
 *The Application will be available at http://localhost:3000.*
 
 ## Documentation
-For more in-depth application flow details, architectural designs, and the database schema, please refer to the [Product Requirements Document (PRD.md)](./PRD.md). 
+For more in-depth application flow details, architectural designs, and the database schema, please refer to the [Product Requirements Document (PRD.md)](./PRD.md).
