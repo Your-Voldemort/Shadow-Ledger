@@ -54,4 +54,4 @@ npm run dev
 - **Citizen Portal**: View owned lands, initiate transfers, track status
 - **Government Portal**: Review transfers, approve/reject, audit trail
 - **Public Verification**: Verify land records with blockchain proof
-- **Immutable Ledger**: Every transfer creates cryptographic proof
+- **Immutable Ledger**: Every transfer creates cryptographic 
