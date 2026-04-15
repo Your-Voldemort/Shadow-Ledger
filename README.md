@@ -1,75 +1,151 @@
+[![Build Status](https://img.shields.io/badge/Project-Shadow--Ledger-blue?style=flat-square)](https://github.com)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org)
+[![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square)](https://fastapi.tiangolo.com)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
+
 # Shadow-Ledger
 
-A blockchain-powered Digital Land Record Management System for secure, transparent, and immutable land ownership tracking. 
+A blockchain-powered Digital Land Record Management System that creates a tamper-proof, transparent ledger of land ownership and transactions.
+
+> Shadow-Ledger replaces error-prone, manual paper-based land registries with a secure digital solution. It provides dedicated portals for **Citizens** and **Government Officials**, paired with a simulated blockchain layer to guarantee the immutability of transaction records.
+
+[Overview](#overview) • [Features](#features) • [Quick Start](#quick-start) • [Manual Setup](#manual-setup) • [Architecture](#architecture) • [Documentation](#documentation)
 
 ## Overview
-Shadow-Ledger is designed to replace traditional paper-based land registries with a tamper-proof digital solution. It offers dedicated portals for **Citizens** and **Government Officials**, recording each property transaction on a simulated blockchain to guarantee immutability. Off-chain elements like PDFs and identity documents are stored efficiently using Supabase.
+
+Land disputes and fraud exist due to manual paper-based records that are error-prone, easily manipulated, lack transparency, and require slow verification processes. Shadow-Ledger addresses these issues by providing:
+
+- **Dual Portals**: Separate interfaces for citizens and government officials
+- **Immutable Records**: Every land transfer creates a cryptographic hash chain block
+- **Document Verification**: Off-chain storage with on-chain hash verification
+- **Real-time Tracking**: Monitor transfer status from initiation to completion
 
 ## Features
 
-- **Citizen Portal**: Citizens can access an overview of their verified properties, initiate transfer requests to buyers (using their Aadhaar-like IDs), upload documents, and track transfer statuses in real time.
-- **Government Portal**: Officials can efficiently review a queue of pending transfers, assess associated documentation, and either approve or reject requests. Actions taken create a permanent audit trail.
-- **Immutable Blockchain Ledger**: Every successful property transfer mints a new block containing cryptographic hashes linking the current and previous owners, ensuring absolute proof of ownership history.
-- **Public Verification**: A unified interface enables public verification of land records and their cryptographic proofs to restore trust in local land registries.
+### Citizen Portal
 
-## Project Structure
+| Feature | Description |
+|---------|-------------|
+| **Dashboard** | View all owned land properties, current status, and full transaction history |
+| **Initiate Transfers** | Start land transfer requests to buyers with document uploads |
+| **Track Status** | Monitor transfer progress: Pending -> Under Review -> Approved/Rejected |
 
-```
-Shadow-Ledger/
-├── backend/          # Python 3 / FastAPI Application
-│   ├── app/         # FastAPI structure (routers, models, logic)
-│   ├── blockchain/  # Simulated Blockchain implementation
-│   └── requirements.txt
-├── frontend/         # Next.js 14 / React 18 Application
-│   ├── app/         # App Router (Citizen, Government, Login flows)
-│   ├── lib/         # API integrations, Utilities & Types
-│   └── package.json
-├── PRD.md           # Product Requirements Document
-└── start.ps1        # PowerShell startup script (Backend+Frontend)
-```
+### Government Portal
 
-## Technology Stack
+| Feature | Description |
+|---------|-------------|
+| **Review Queue** | View and review pending land transfer requests |
+| **Approve/Reject** | Process transfers; approval triggers blockchain transaction |
+| **Audit Trail** | Complete chronological history of all transfers |
 
-- **Frontend**: Next.js 14, React 18, Tailwind CSS, Framer Motion
-- **Backend**: Python 3.10+, FastAPI, SQLAlchemy, Pydantic
-- **Database**: SQLite (built-in relational data management)
-- **Blockchain**: Locally simulated SHA-256 cryptographic hash chain
-- **Storage**: Supabase (used as an off-chain store for PDFs/documents)
+### Blockchain Layer
 
-## Getting Started
+- **Immutable Ledger**: Each transfer mints a new block with SHA-256 cryptographic linking
+- **Public Verification**: Anyone can verify land records using a property ID
+- **Hash Proof**: Documents stored off-chain (Supabase) with their hashes on-chain
+
+## Quick Start
 
 ### Prerequisites
-- Node.js 18+
-- Python 3.10+
-- PowerShell (Windows) - Optional for quick start
+
+- [Node.js](https://nodejs.org/) (v18+)
+- [Python](https://www.python.org/) (v3.10+)
+- [Supabase](https://supabase.com/) account (for document storage)
+- PowerShell (Windows) — optional, for the startup script
 
 ### One-Click Startup (Windows)
-A handy PowerShell script is available for quickly spinning up both the backend and frontend at the same time:
+
 ```powershell
-.\start.ps1 -Install   # First-time setup (installs deps and starts servers)
-.\start.ps1            # Start servers after initial setup
+# First-time setup: install dependencies and start servers
+.\start.ps1 -Install
+
+# Subsequent runs
+.\start.ps1
 ```
 
-### Manual Setup
+This script starts both the backend (`http://localhost:8000`) and frontend (`http://localhost:3000`) servers.
 
-**1. Backend Setup**
+## Manual Setup
+
+### 1. Backend
+
 ```bash
 cd backend
+
+# Create virtual environment
 python -m venv venv
-# On Windows: venv\Scripts\activate
-# On Mac/Linux: source venv/bin/activate
+
+# Activate (Windows)
+venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Start server
 uvicorn app.main:app --reload
 ```
-*The API will be available at http://localhost:8000.*
 
-**2. Frontend Setup**
+### 2. Frontend
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-*The Application will be available at http://localhost:3000.*
+
+The application will be available at `http://localhost:3000`.
+
+> [!TIP]
+> Use these demo accounts to test the system:
+> - **Citizen**: `citizen@example.com` / `password123`
+> - **Government**: `govt@example.com` / `password123`
+
+## Architecture
+
+```
+Shadow-Ledger/
+├── backend/                 # Python FastAPI application
+│   ├── app/
+│   │   ├── routers/         # Auth, Properties, Transfers, Blockchain APIs
+│   │   ├── models.py        # SQLAlchemy ORM models
+│   │   └── database.py      # SQLite database configuration
+│   └── blockchain/          # Simulated blockchain implementation
+│       └── blockchain.py    # SHA-256 hash chain ledger
+├── frontend/                # Next.js 14 / React 18
+│   ├── app/
+│   │   ├── citizen/         # Citizen dashboard and transfers
+│   │   ├── government/      # Government review portal
+│   │   └── verify/          # Public land record verification
+│   └── tailwind.config.js   # Styling configuration
+├── PRD.md                   # Product Requirements Document
+└── start.ps1                # Startup script
+```
+
+### Technology Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | Next.js 14, React 18, Tailwind CSS, Framer Motion |
+| Backend | Python 3.10+, FastAPI, SQLAlchemy, Pydantic |
+| Blockchain | Custom Python implementation (SHA-256 hash chains) |
+| Database | SQLite |
+| Storage | Supabase (off-chain document storage) |
+
+### Data Flow
+
+1. **Citizen** initiates transfer → uploads document to Supabase → creates transfer request
+2. **Government** reviews request → verifies documents → approves/rejects
+3. **On Approval**: Backend hashes document, creates blockchain block, updates ownership
+4. **Verification**: Public endpoint fetches blockchain history for any property ID
 
 ## Documentation
-For more in-depth application flow details, architectural designs, and the database schema, please refer to the [Product Requirements Document (PRD.md)](./PRD.md).
+
+For detailed information about system architecture, database schema, user stories, and the demo walkthrough, see:
+
+- [Product Requirements Document (PRD.md)](./PRD.md)
+
+## License
+
+This project is licensed under the terms found in the `LICENSE` file.
