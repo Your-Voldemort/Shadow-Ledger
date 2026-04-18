@@ -4,6 +4,7 @@ Transfer API endpoints
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
@@ -271,9 +272,14 @@ async def approve_transfer(
     
     new_block = blockchain.add_block(transaction_data)
     
+    # Get the next block index from database (to handle app reloads)
+    # Find max existing index and use the next one
+    max_block_index = db.query(func.max(Block.block_index)).scalar()
+    next_block_index = (max_block_index + 1) if max_block_index is not None else 1
+    
     # Store block in database
     db_block = Block(
-        block_index=new_block.index,
+        block_index=next_block_index,
         timestamp=datetime.fromtimestamp(new_block.timestamp),
         transaction_data=new_block.transaction_data,
         previous_hash=new_block.previous_hash,
